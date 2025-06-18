@@ -4,6 +4,7 @@ class Routes {
   static const String LOGIN_NAME = 'login'; // ✅ Tambahan
   static const String LOGIN_SCREEN = '/login'; // ✅ Tambahan
 
+  static const String ADMIN_PROFIL_NAME = '/admin-profil';
   static const String ADMIN_BERANDA_NAME = '/admin-beranda';
   static const String DASHBOARD_NAME = 'dashboard';
   static const String HOME_NAME = 'home';

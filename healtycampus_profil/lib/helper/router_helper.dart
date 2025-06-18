@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:healthy_campus/app/app.dart';
 import 'package:healthy_campus/utill/routes.dart';
 import 'package:healthy_campus/view/screen/dashboard/DashboardScreen.dart';
+import 'package:healthy_campus/view/screen/dashboard/AdminDashboardScreen.dart';
 import 'package:healthy_campus/view/screen/profil/update_gender_screen.dart';
 import 'package:healthy_campus/view/screen/profil/update_nama_screen.dart';
 import 'package:healthy_campus/view/screen/profil/update_profil_screen.dart';
@@ -22,7 +23,7 @@ final routerHelper = GoRouter(
       path: Routes.ADMIN_BERANDA_SCREEN, // Gunakan constant yang sesuai
       name: Routes.ADMIN_BERANDA_NAME,
       pageBuilder: (context, state) => const MaterialPage(
-        child: AdminBerandaScreen(),
+        child: AdminDashboardScreen(),
       ),
     ),
     GoRoute(

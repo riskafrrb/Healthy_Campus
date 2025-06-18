@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:healthy_campus/utill/images.dart';
 
 class AdminBerandaScreen extends StatelessWidget {
   const AdminBerandaScreen({super.key});
@@ -91,23 +92,8 @@ class AdminBerandaScreen extends StatelessWidget {
         ),
       ),
 
-      // Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: const BoxDecoration(
-          color: Color(0xFF5C8858),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 'Beranda', true),
-            _buildNavItem(Icons.people, 'Pengguna', false),
-            _buildNavItem(Icons.article, 'Artikel', false),
-            _buildNavItem(Icons.fastfood, 'Makanan', false),
-          ],
-        ),
-      ),
+      // BOTTOM COPYRIGHT NAVIGATION (Sama seperti di ProfilScreen)
+      bottomNavigationBar: Image.asset(Images.copy_right),
     );
   }
 
@@ -148,28 +134,6 @@ class AdminBerandaScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? Colors.white : Colors.white.withOpacity(0.7),
-          size: 24,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: isActive ? Colors.white : Colors.white.withOpacity(0.7),
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 }

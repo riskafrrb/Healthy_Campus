@@ -201,31 +201,6 @@ class DataMakananScreen extends StatelessWidget {
           ],
         ),
       ),
-
-      // Bottom Navigation Bar (Consistent with Artikel screen)
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: const BoxDecoration(
-          color: Color(0xFF5C8858),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x3F000000),
-              blurRadius: 4,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 'Beranda', false),
-            _buildNavItem(Icons.people, 'Pengguna', false),
-            _buildNavItem(Icons.article, 'Artikel', false),
-            _buildNavItem(Icons.fastfood, 'Makanan', true),
-          ],
-        ),
-      ),
     );
   }
 

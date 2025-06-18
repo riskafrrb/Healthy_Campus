@@ -17,6 +17,11 @@ class Images {
   static const String ic_time_clock = 'assets/icon/ic_time_clock.svg';
   static const String ic_timer = 'assets/icon/ic_timer.svg';
   static const String ic_use = 'assets/icon/ic_user.svg';
+  static const String ic_btm_home_admin = 'assets/icon/ic_btm_home_admin.svg';
+  static const String ic_btm_users_admin = 'assets/icon/ic_btm_users_admin.svg';
+  static const String ic_btm_article_admin =
+      'assets/icon/ic_btm_article_admin.svg';
+  static const String ic_btm_food_admin = 'assets/icon/ic_btm_food_admin.svg';
 
   // Image png
   static const String avatar = 'assets/image/avatar.png';
