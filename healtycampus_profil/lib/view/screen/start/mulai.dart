@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:healthy_campus/view/screen/start/login.dart';
 
 class Mulai extends StatelessWidget {
@@ -53,13 +54,11 @@ class Mulai extends StatelessWidget {
                 // Tombol Mulai (dibesarkan)
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Login()),
-                    );
+                    context.go(
+                        '/login'); // atau pakai constant: context.go(Routes.LOGIN_SCREEN);
                   },
                   child: Image.asset(
-                    'assets/images/mulai.png',
+                    'assets/image/mulai.png',
                     width: 220, // dibesarkan
                     fit: BoxFit.contain,
                   ),

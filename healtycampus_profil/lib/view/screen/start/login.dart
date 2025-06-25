@@ -1,40 +1,69 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:healthy_campus/view/screen/homepage/homepage_screen.dart';
+import 'package:go_router/go_router.dart'; // ✅ untuk context.go
+import 'package:healthy_campus/view/screen/dashboard/AdminDashboardScreen.dart';
+import 'package:healthy_campus/view/screen/dashboard/DashboardScreen.dart';
 import 'package:healthy_campus/view/screen/start/verification_page.dart';
 import 'signup.dart';
+import 'package:healthy_campus/models/user_model.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:healthy_campus/utill/routes.dart'; // ✅ untuk route constant
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
   const Login({super.key});
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  final UserModel adminUser = UserModel(
+    username: 'admin',
+    password: 'admin123',
+    email: 'admin@healthycampus.com',
+    role: 'admin',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndAddAdminUser();
+  }
+
+  Future<void> _checkAndAddAdminUser() async {
+    final box = Hive.box<UserModel>('userBox');
+    final adminExists = box.values.any((user) => user.username == 'admin');
+
+    if (!adminExists) {
+      await box.add(adminUser);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
           Image.asset(
-            'assets/images/bg_login.png',
+            'assets/image/bg_login.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
           ),
-
-          // Content
           SingleChildScrollView(
             child: Column(
               children: [
-                // Logo
                 Container(
                   padding: const EdgeInsets.only(top: 60),
                   alignment: Alignment.center,
                   child: Image.asset(
-                    'assets/images/teks_healthycampus.png',
+                    'assets/image/teks_healthycampus.png',
                     width: 200,
                   ),
                 ),
-
-                // White container
                 Container(
                   margin: const EdgeInsets.only(top: 40),
                   padding: const EdgeInsets.symmetric(
@@ -64,15 +93,27 @@ class Login extends StatelessWidget {
                       const Text(
                         'Halo! masuk untuk melanjutkan',
                         style: TextStyle(
-                          fontFamily: 'SansSerifCollection',
                           fontSize: 14,
                           color: Colors.black54,
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Image.asset('assets/images/usn_login.png'),
+                      TextField(
+                        controller: usernameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Username',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                       const SizedBox(height: 16),
-                      Image.asset('assets/images/sandi_login.png'),
+                      TextField(
+                        controller: passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerRight,
@@ -81,12 +122,11 @@ class Login extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    VerificationPage(), // Navigate to password verification page
+                                builder: (context) => VerificationPage(),
                               ),
                             );
                           },
-                          child: Text(
+                          child: const Text(
                             'Lupa kata sandi?',
                             style: TextStyle(
                               fontSize: 12,
@@ -99,13 +139,58 @@ class Login extends StatelessWidget {
                       const SizedBox(height: 40),
                       Center(
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BerandaScreen(),
-                              ),
-                            );
+                          onTap: () async {
+                            final box = Hive.box<UserModel>('userBox');
+
+                            String inputUsername =
+                                usernameController.text.trim();
+                            String inputPassword =
+                                passwordController.text.trim();
+
+                            // ✅ GUNAKAN GoRouter UNTUK ADMIN
+                            if (inputUsername == 'admin' &&
+                                inputPassword == 'admin123') {
+                              final sessionBox =
+                                  await Hive.openBox('sessionBox');
+                              await sessionBox.put(
+                                  'username', adminUser.username);
+                              await sessionBox.put('email', adminUser.email);
+                              await sessionBox.put('role', adminUser.role);
+
+                              context.go(Routes.ADMIN_BERANDA_SCREEN);
+                              return;
+                            }
+
+                            final users = box.values.toList();
+                            UserModel? matchUser;
+                            try {
+                              matchUser = users.firstWhere(
+                                (user) =>
+                                    user.username == inputUsername &&
+                                    user.password == inputPassword,
+                              );
+                            } catch (e) {
+                              matchUser = null;
+                            }
+
+                            if (matchUser != null) {
+                              // Simpan session login ke Hive
+                              final sessionBox =
+                                  await Hive.openBox('sessionBox');
+                              await sessionBox.put(
+                                  'username', matchUser.username);
+                              await sessionBox.put('email', matchUser.email);
+                              await sessionBox.put('role', matchUser.role);
+
+                              // Arahkan ke dashboard
+                              context.go(Routes.DASHBOARD_SCREEN);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Username atau password salah'),
+                                ),
+                              );
+                            }
                           },
                           child: Image.asset(
                             'assets/image/masuk.png',

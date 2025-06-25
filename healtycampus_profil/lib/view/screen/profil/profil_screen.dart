@@ -1,14 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:sizer/sizer.dart';
+
 import 'package:healthy_campus/utill/images.dart';
 import 'package:healthy_campus/utill/routes.dart';
 import 'package:healthy_campus/utill/style.dart';
 import 'package:healthy_campus/view/screen/profil/widget/confirm_alert_widget.dart';
-import 'package:sizer/sizer.dart';
 
-class ProfilScreen extends StatelessWidget {
+class ProfilScreen extends StatefulWidget {
   const ProfilScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProfilScreen> createState() => _ProfilScreenState();
+}
+
+class _ProfilScreenState extends State<ProfilScreen> {
+  String username = '-';
+  String email = '-';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessionData();
+  }
+
+  Future<void> _loadSessionData() async {
+    final sessionBox = await Hive.openBox('sessionBox');
+    setState(() {
+      username = sessionBox.get('username', defaultValue: '-') ?? '-';
+      email = sessionBox.get('email', defaultValue: '-') ?? '-';
+    });
+  }
+
+  Future<void> _logoutAndNavigate() async {
+    final sessionBox = await Hive.openBox('sessionBox');
+    await sessionBox.clear();
+
+    // Tutup dialog konfirmasi
+    Navigator.of(context).pop();
+
+    // Arahkan ke halaman login (pakai pushNamed seperti Edit Profil)
+    GoRouter.of(context).pushNamed(Routes.LOGIN_NAME);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,31 +61,24 @@ class ProfilScreen extends StatelessWidget {
       body: Container(
         padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 5.w),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SizedBox(height: 5.h),
-            Center(
-              child: Image.asset(
-                Images.avatar,
-              ),
-            ),
+            Center(child: Image.asset(Images.avatar)),
             SizedBox(height: 2.h),
             Text(
-              'Sarah Ayu',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
+              username,
               style: openSansRegular.copyWith(
-                  fontSize: 18.sp, fontWeight: FontWeight.w600, height: 0.15.h),
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             Text(
-              '23082010136@student.upnjatim.ac.id',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
+              email,
               style: openSansRegular.copyWith(fontSize: 15.sp),
             ),
             SizedBox(height: 2.h),
+
+            // Info Jarak
             Container(
               padding: EdgeInsets.symmetric(vertical: 3.w, horizontal: 2.h),
               decoration: BoxDecoration(
@@ -58,21 +86,16 @@ class ProfilScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Row(
-                children: [
-                  Container(
+                children: List.generate(3, (_) {
+                  return Expanded(
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SvgPicture.asset(
-                          Images.ic_place_marker,
-                          width: 5.h,
-                          fit: BoxFit.fitWidth,
-                        ),
+                        SvgPicture.asset(Images.ic_place_marker, width: 5.h),
                         SizedBox(width: 1.h),
                         Text.rich(
                           TextSpan(
-                            style: openSansRegular.copyWith(
-                                fontSize: 14.sp, height: 0.15.h),
+                            style: openSansRegular.copyWith(fontSize: 14.sp),
                             children: [
                               const TextSpan(text: 'Jarak\n'),
                               TextSpan(
@@ -84,106 +107,41 @@ class ProfilScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(width: 1.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 1.h),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        left: BorderSide(color: Colors.white, width: 1.5),
-                        right: BorderSide(color: Colors.white, width: 1.5),
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          Images.ic_place_marker,
-                          width: 5.h,
-                          fit: BoxFit.fitWidth,
-                        ),
-                        SizedBox(width: 1.h),
-                        Text.rich(
-                          TextSpan(
-                            style: openSansRegular.copyWith(
-                                fontSize: 14.sp, height: 0.15.h),
-                            children: [
-                              const TextSpan(text: 'Jarak\n'),
-                              TextSpan(
-                                text: '3,2 Km',
-                                style: openSansMedium.copyWith(fontSize: 14.sp),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 1.h),
-                  Container(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          Images.ic_place_marker,
-                          width: 5.h,
-                          fit: BoxFit.fitWidth,
-                        ),
-                        SizedBox(width: 1.h),
-                        Text.rich(
-                          TextSpan(
-                            style: openSansRegular.copyWith(
-                                fontSize: 14.sp, height: 0.15.h),
-                            children: [
-                              const TextSpan(text: 'Jarak\n'),
-                              TextSpan(
-                                text: '3,2 Km',
-                                style: openSansMedium.copyWith(fontSize: 14.sp),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  );
+                }),
               ),
             ),
             SizedBox(height: 2.h),
+
+            // Menu Profil
             Expanded(
               child: ListView(
-                shrinkWrap: true,
                 children: [
+                  // Ubah Profil
                   InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
+                    onTap: () =>
+                        GoRouter.of(context).pushNamed(Routes.EDIT_PROFIL_NAME),
                     child: Container(
                       padding:
                           EdgeInsets.symmetric(vertical: 2.h, horizontal: 3.w),
                       decoration: const BoxDecoration(
                         border: Border(
-                          top: BorderSide(color: Color(0xffEFEFEF), width: 1),
-                          bottom:
-                              BorderSide(color: Color(0xffEFEFEF), width: 1),
+                          top: BorderSide(color: Color(0xffEFEFEF)),
+                          bottom: BorderSide(color: Color(0xffEFEFEF)),
                         ),
                       ),
                       child: Row(
                         children: [
                           SvgPicture.asset(Images.ic_edit),
                           SizedBox(width: 1.h),
-                          Text(
-                            'Ubah Profil',
-                            style: openSansMedium,
-                          )
+                          Text('Ubah Profil', style: openSansMedium),
                         ],
                       ),
                     ),
-                    onTap: () =>
-                        GoRouter.of(context).pushNamed(Routes.EDIT_PROFIL_NAME),
                   ),
+
+                  // Riwayat Penyakit
                   InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
                     onTap: () => GoRouter.of(context)
                         .pushNamed(Routes.RIWAYAT_PENYAKIT_NAME),
                     child: Container(
@@ -191,37 +149,28 @@ class ProfilScreen extends StatelessWidget {
                           EdgeInsets.symmetric(vertical: 2.h, horizontal: 3.w),
                       decoration: const BoxDecoration(
                         border: Border(
-                            bottom:
-                                BorderSide(color: Color(0xffEFEFEF), width: 1)),
+                          bottom: BorderSide(color: Color(0xffEFEFEF)),
+                        ),
                       ),
                       child: Row(
                         children: [
                           SvgPicture.asset(Images.ic_history),
                           SizedBox(width: 1.h),
-                          Text(
-                            'Riwayat Penyakit',
-                            style: openSansMedium,
-                          )
+                          Text('Riwayat Penyakit', style: openSansMedium),
                         ],
                       ),
                     ),
                   ),
+
+                  // Logout
                   InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
                     onTap: () => showDialog(
                       context: context,
                       barrierDismissible: false,
                       builder: (context) => ConfirmAlertWidget(
                         title: 'Konfirmasi',
                         message: 'Apakah anda yakin ingin keluar?',
-                        onSubmit: () {
-                          // Close the dialog
-                          Navigator.of(context).pop();
-                          // Navigate to admin home page
-                          GoRouter.of(context)
-                              .goNamed(Routes.ADMIN_BERANDA_NAME);
-                        },
+                        onSubmit: _logoutAndNavigate,
                       ),
                     ),
                     child: Container(
@@ -229,8 +178,8 @@ class ProfilScreen extends StatelessWidget {
                           EdgeInsets.symmetric(vertical: 2.h, horizontal: 3.w),
                       decoration: const BoxDecoration(
                         border: Border(
-                            bottom:
-                                BorderSide(color: Color(0xffEFEFEF), width: 1)),
+                          bottom: BorderSide(color: Color(0xffEFEFEF)),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -239,16 +188,15 @@ class ProfilScreen extends StatelessWidget {
                           Text(
                             'Keluar',
                             style: openSansMedium.copyWith(
-                              color: const Color(0xffEA4335),
-                            ),
-                          )
+                                color: const Color(0xffEA4335)),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

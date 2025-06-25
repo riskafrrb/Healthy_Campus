@@ -1,7 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:go_router/go_router.dart';
 
-class DataMakananScreen extends StatelessWidget {
+class DataMakananScreen extends StatefulWidget {
   const DataMakananScreen({super.key});
+
+  @override
+  State<DataMakananScreen> createState() => _DataMakananScreenState();
+}
+
+class _DataMakananScreenState extends State<DataMakananScreen> {
+  Box? tokoBox;
+
+  @override
+  void initState() {
+    super.initState();
+    Hive.openBox('tokoMakananBox').then((box) {
+      setState(() {
+        tokoBox = box;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +62,12 @@ class DataMakananScreen extends StatelessWidget {
               ),
             ),
 
-            // Add Store Button (Enhanced to match Artikel screen)
+            // Add Store Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 23),
               child: InkWell(
                 onTap: () {
-                  // Action when button is tapped
+                  context.push('/tambah-toko');
                 },
                 borderRadius: BorderRadius.circular(6),
                 child: Container(
@@ -132,71 +151,90 @@ class DataMakananScreen extends StatelessWidget {
 
             // Table Content
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 23),
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  final storeNames = [
-                    'Alfanature COLDPRESSED JUICE n SMOOTHIES',
-                    'Dharma Yogi Detox Centre',
-                    'Dapur Camilan Sehat',
-                    'OLARASALAD',
-                    'Greenly Merr',
-                  ];
+              child: tokoBox == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : ValueListenableBuilder(
+                      valueListenable: tokoBox!.listenable(),
+                      builder: (context, Box box, _) {
+                        if (box.isEmpty) {
+                          return const Center(
+                              child: Text('Belum ada data toko.'));
+                        }
 
-                  return Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color:
-                          index.isOdd ? Colors.white : const Color(0xFFF8FFF8),
-                      border: Border.all(color: const Color(0xFF79A375)),
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 23),
+                          itemCount: box.length,
+                          itemBuilder: (context, index) {
+                            final data = box.getAt(index);
+                            final nama = data['nama'] ?? '-';
+
+                            return Container(
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: index.isOdd
+                                    ? Colors.white
+                                    : const Color(0xFFF8FFF8),
+                                border:
+                                    Border.all(color: const Color(0xFF79A375)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 16),
+                                      child: Text(
+                                        nama,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        _buildActionButton(
+                                          Icons.visibility,
+                                          'Lihat',
+                                          const Color(0xFF4C6F49),
+                                          onTap: () {
+                                            context.push('/lihat-toko/$index');
+                                          },
+                                        ),
+                                        const SizedBox(width: 8),
+                                        _buildActionButton(
+                                          Icons.edit,
+                                          'Edit',
+                                          const Color(0xFFE9B61F),
+                                          onTap: () {
+                                            context.push('/edit-toko/$index');
+                                          },
+                                        ),
+                                        const SizedBox(width: 8),
+                                        _buildActionButton(
+                                          Icons.delete,
+                                          'Hapus',
+                                          const Color(0xFFEA4335),
+                                          onTap: () {
+                                            tokoBox!.deleteAt(index);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 16),
-                            child: Text(
-                              storeNames[index],
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildActionButton(
-                                Icons.visibility,
-                                'Lihat',
-                                const Color(0xFF4C6F49),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildActionButton(
-                                Icons.edit,
-                                'Edit',
-                                const Color(0xFFE9B61F),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildActionButton(
-                                Icons.delete,
-                                'Hapus',
-                                const Color(0xFFEA4335),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -204,8 +242,8 @@ class DataMakananScreen extends StatelessWidget {
     );
   }
 
-  // Consistent action button style with Artikel screen
-  Widget _buildActionButton(IconData icon, String text, Color color) {
+  Widget _buildActionButton(IconData icon, String text, Color color,
+      {VoidCallback? onTap}) {
     return Tooltip(
       message: text,
       child: Material(
@@ -213,9 +251,7 @@ class DataMakananScreen extends StatelessWidget {
         color: color,
         child: InkWell(
           borderRadius: BorderRadius.circular(4),
-          onTap: () {
-            // Action when button is tapped
-          },
+          onTap: onTap,
           child: Container(
             width: 36,
             height: 36,
@@ -224,42 +260,6 @@ class DataMakananScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  // Consistent nav item style with Artikel screen
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        isActive
-            ? Container(
-                width: 50,
-                height: 50,
-                decoration: const ShapeDecoration(
-                  color: Colors.white,
-                  shape: CircleBorder(),
-                  shadows: [
-                    BoxShadow(
-                      color: Color(0x3F000000),
-                      blurRadius: 4,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(icon, color: const Color(0xFF5C8858)),
-              )
-            : Icon(icon, color: Colors.white),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 }

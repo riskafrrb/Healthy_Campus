@@ -1,19 +1,34 @@
-import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-class TambahTokoScreen extends StatefulWidget {
-  const TambahTokoScreen({super.key});
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:image_picker/image_picker.dart';
+
+class EditTokoScreen extends StatefulWidget {
+  final int index;
+
+  const EditTokoScreen({super.key, required this.index});
 
   @override
-  State<TambahTokoScreen> createState() => _TambahTokoScreenState();
+  State<EditTokoScreen> createState() => _EditTokoScreenState();
 }
 
-class _TambahTokoScreenState extends State<TambahTokoScreen> {
-  final TextEditingController namaController = TextEditingController();
-  final TextEditingController alamatController = TextEditingController();
+class _EditTokoScreenState extends State<EditTokoScreen> {
+  final namaController = TextEditingController();
+  final alamatController = TextEditingController();
   File? _image;
+
+  @override
+  void initState() {
+    super.initState();
+    final box = Hive.box('tokoMakananBox');
+    final data = box.getAt(widget.index);
+    namaController.text = data['nama'] ?? '';
+    alamatController.text = data['alamat'] ?? '';
+    if (data['gambar'] != null && data['gambar'].toString().isNotEmpty) {
+      _image = File(data['gambar']);
+    }
+  }
 
   Future<void> _pickImage() async {
     final pickedFile =
@@ -71,7 +86,7 @@ class _TambahTokoScreenState extends State<TambahTokoScreen> {
                     ),
                   ),
 
-                  // Back button + Title
+                  // Back Button and Title
                   Positioned(
                     left: 25,
                     top: 90,
@@ -84,7 +99,7 @@ class _TambahTokoScreenState extends State<TambahTokoScreen> {
                     left: 57,
                     top: 90,
                     child: Text(
-                      'Toko Makanan',
+                      'Edit Toko Makanan',
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 20,
@@ -93,7 +108,7 @@ class _TambahTokoScreenState extends State<TambahTokoScreen> {
                     ),
                   ),
 
-                  // Upload box
+                  // Gambar dan upload baru
                   Positioned(
                     left: 52,
                     top: 137,
@@ -134,7 +149,7 @@ class _TambahTokoScreenState extends State<TambahTokoScreen> {
                     ),
                   ),
 
-                  // Input Nama
+                  // Nama Toko
                   Positioned(
                     left: 52,
                     top: 329,
@@ -156,7 +171,7 @@ class _TambahTokoScreenState extends State<TambahTokoScreen> {
                     ),
                   ),
 
-                  // Input Alamat
+                  // Alamat Toko
                   Positioned(
                     left: 54,
                     top: 360,
@@ -191,9 +206,9 @@ class _TambahTokoScreenState extends State<TambahTokoScreen> {
                         ),
                         minimumSize: const Size(76.23, 32),
                       ),
-                      onPressed: () async {
-                        final box = await Hive.openBox('tokoMakananBox');
-                        await box.add({
+                      onPressed: () {
+                        final box = Hive.box('tokoMakananBox');
+                        box.putAt(widget.index, {
                           'nama': namaController.text.trim(),
                           'alamat': alamatController.text.trim(),
                           'gambar': _image?.path ?? '',
@@ -201,9 +216,8 @@ class _TambahTokoScreenState extends State<TambahTokoScreen> {
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text('Toko berhasil disimpan!')),
+                              content: Text('Data berhasil diperbarui')),
                         );
-
                         Navigator.pop(context);
                       },
                       child: const Text(

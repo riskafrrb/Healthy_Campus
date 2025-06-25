@@ -1,9 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:healthy_campus/utill/style.dart';
 import 'package:sizer/sizer.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:healthy_campus/models/user_model.dart';
 
-class UpdateNamaScreen extends StatelessWidget {
+class UpdateNamaScreen extends StatefulWidget {
   const UpdateNamaScreen({super.key});
+
+  @override
+  State<UpdateNamaScreen> createState() => _UpdateNamaScreenState();
+}
+
+class _UpdateNamaScreenState extends State<UpdateNamaScreen> {
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final sessionBox = Hive.box('sessionBox');
+    final username = sessionBox.get('username', defaultValue: '-');
+    _nameController.text = username;
+  }
+
+  Future<void> _saveName() async {
+    final sessionBox = Hive.box('sessionBox');
+    final userBox = Hive.box<UserModel>('userBox');
+
+    final newName = _nameController.text.trim();
+    final email = sessionBox.get('email'); // identitas unik user
+
+    // Update sessionBox (untuk tampil nama sekarang)
+    await sessionBox.put('username', newName);
+
+    // Cari user di userBox berdasarkan email
+    final index =
+        userBox.values.toList().indexWhere((user) => user.email == email);
+    if (index != -1) {
+      final oldUser = userBox.getAt(index);
+      final updatedUser = UserModel(
+        username: newName,
+        password: oldUser!.password,
+        email: oldUser.email,
+        role: oldUser.role,
+      );
+      await userBox.putAt(index, updatedUser);
+    }
+
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +94,7 @@ class UpdateNamaScreen extends StatelessWidget {
                 ],
               ),
               child: TextField(
+                controller: _nameController,
                 decoration: InputDecoration(
                   contentPadding:
                       EdgeInsets.symmetric(vertical: 1.h, horizontal: 0.h),
@@ -83,7 +128,7 @@ class UpdateNamaScreen extends StatelessWidget {
                 foregroundColor:
                     const WidgetStatePropertyAll<Color>(Colors.white),
               ),
-              onPressed: () => Navigator.pop(context),
+              onPressed: _saveName,
               child: Text(
                 'Simpan',
                 style: openSansMedium.copyWith(fontSize: 16.sp),

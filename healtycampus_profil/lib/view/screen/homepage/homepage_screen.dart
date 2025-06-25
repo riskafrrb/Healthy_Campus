@@ -1,18 +1,39 @@
-import 'package:flutter/material.dart'; // Import the Notifikasi screen
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:healthy_campus/utill/images.dart';
-import 'package:healthy_campus/utill/routes.dart';
-import 'package:healthy_campus/utill/style.dart';
-import 'package:healthy_campus/view/screen/artikel/artikel_home.dart';
 import 'package:healthy_campus/view/screen/artikel/artikel1.dart';
 import 'package:healthy_campus/view/screen/artikel/artikel2.dart';
 import 'package:healthy_campus/view/screen/artikel/artikel3.dart';
-import 'package:healthy_campus/view/screen/artikel/artikel4.dart';
-import 'package:healthy_campus/view/screen/artikel/artikel5.dart';
+import 'package:healthy_campus/view/screen/artikel/artikel_home.dart';
 import 'package:healthy_campus/view/screen/notifikasi/notifikasi.dart';
 import 'package:healthy_campus/view/screen/homepage/lacak_aktivitas.dart';
 
-class BerandaScreen extends StatelessWidget {
+class BerandaScreen extends StatefulWidget {
   const BerandaScreen({super.key});
+
+  @override
+  State<BerandaScreen> createState() => _BerandaScreenState();
+}
+
+class _BerandaScreenState extends State<BerandaScreen> {
+  String username = '';
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUsername();
+  }
+
+  void getCurrentUsername() {
+    final box = Hive.box('sessionBox');
+    final storedUsername =
+        box.get('username'); // pastikan kamu simpan username saat login
+    if (storedUsername != null) {
+      setState(() {
+        username = storedUsername;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,16 +73,15 @@ class BerandaScreen extends StatelessWidget {
                             width: 50,
                           ),
                           const SizedBox(width: 12),
-                          const Text(
-                            'Halo, Sarah!',
-                            style: TextStyle(
+                          Text(
+                            'Halo, ${username.isNotEmpty ? username : "-"}!',
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
                           const Spacer(),
-                          // Notification icon with GestureDetector
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -100,7 +120,6 @@ class BerandaScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Artikel
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
@@ -185,8 +204,6 @@ class BerandaScreen extends StatelessWidget {
               ],
             ),
           ),
-
-          // Bottom navbar
         ],
       ),
     );
